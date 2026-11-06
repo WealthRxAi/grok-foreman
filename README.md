@@ -1,6 +1,6 @@
 # Grok Bot manages. Claude Code builds. You merge.
 
-The exact files from the SalStack Labs video "Grok Bot Found the Bug. Claude Code Fixed It."
+The exact files from the SalStack Labs video on running Grok Bot as the manager and Claude Code as the worker. Free, MIT licensed.
 
 ```
  6:00  Grok Bot (manager)   reads your error logs + issues, picks ≤3 tasks, writes a ticket each
