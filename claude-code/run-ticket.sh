@@ -74,9 +74,8 @@ if ! claude -p "$PROMPT" \
 fi
 
 [ -s "$PROOF" ] || blocked "worker wrote no proof file (repo left on $BRANCH)"
-if grep -q '^BLOCKED' "$PROOF"; then
-  blocked "worker: $(grep -m 1 '^BLOCKED' "$PROOF" | sed -E 's/^BLOCKED:? *//') (repo left on $BRANCH)"
-fi
+WHY="$(grep -m 1 '^BLOCKED' "$PROOF" | sed -E 's/^BLOCKED:? *//' || true)"
+[ -z "$WHY" ] || blocked "worker: $WHY (repo left on $BRANCH)"
 [ -z "$(git status --porcelain)" ] || blocked "worker left uncommitted changes (repo left on $BRANCH)"
 [ "$(git rev-list --count "$BASE..HEAD")" -gt 0 ] || blocked "worker made no commits (repo left on $BRANCH)"
 # A fix with no test change is not proven. (You still check fail-before/pass-after in the PR.)
@@ -85,6 +84,7 @@ git diff --name-only "$BASE..HEAD" | grep -Eiq '(test|spec)' \
 
 # The worker is denied git push; the script pushes and opens the PR.
 git push --quiet -u origin "$BRANCH"
-PR_URL="$(gh pr create --base "$BASE" --head "$BRANCH" --title "$TITLE" --body-file "$PROOF")"
+PR_URL="$(gh pr create --base "$BASE" --head "$BRANCH" \
+  --title "$TITLE" --body-file "$PROOF")"
 git checkout "$BASE" --quiet
 echo "PR_READY $PR_URL"
