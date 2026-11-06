@@ -22,10 +22,10 @@
       "Bash(ls:*)"
     ],
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Edit(./.env)",
-      "Edit(./.env.*)",
+      "Read(**/.env*)",
+      "Edit(**/.env*)",
+      "WebFetch",
+      "WebSearch",
       "Bash(git push:*)",
       "Bash(git merge:*)",
       "Bash(git rebase:*)",
@@ -49,6 +49,16 @@
     "failIfUnavailable": true,
     "network": {
       "allowedDomains": []
+    },
+    "filesystem": {
+      "denyRead": [
+        "./.env",
+        "./.env.local",
+        "./.env.production",
+        "~/.ssh",
+        "~/.aws",
+        "~/.config/gh"
+      ]
     }
   }
 }
