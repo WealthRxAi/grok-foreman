@@ -2,16 +2,18 @@
 # One real run of the grok-foreman worker on TubeDesk (TASK-1), for the SalStack Labs video.
 # Run on the Mac where Claude Code and gh are already signed in:
 #   bash <(curl -fsSL https://raw.githubusercontent.com/WealthRxAi/grok-foreman/main/examples/real-run/run.sh)
-# It (1) adds the kit's worker setup to tubedesk once, (2) hands TASK-1 to Claude Code
-# through run-ticket.sh, and (3) prints PR_READY <link> or BLOCKED <reason>. It never merges.
+# It works in its own fresh copy of tubedesk (~/.bot-runs/tubedesk), so your own folder and any
+# unsaved work in it are never touched. It (1) adds the kit's worker setup to tubedesk once,
+# (2) hands TASK-1 to Claude Code through run-ticket.sh, and (3) prints PR_READY <link> or
+# BLOCKED <reason>. It never merges.
 set -euo pipefail
 
-REPO="${TUBEDESK_DIR:-$HOME/Documents/GitHub/tubedesk}"
 KIT="$HOME/grok-foreman"
 RUNS="$HOME/.bot-runs"
+REPO="${TUBEDESK_DIR:-$RUNS/tubedesk}"
+TUBEDESK_URL="${TUBEDESK_URL:-https://github.com/WealthRxAi/tubedesk}"
 RAW="https://raw.githubusercontent.com/WealthRxAi/grok-foreman/main"
 
-[ -d "$REPO/.git" ] || { echo "BLOCKED tubedesk not found at $REPO (set TUBEDESK_DIR)"; exit 1; }
 for t in git gh claude node; do command -v "$t" >/dev/null || { echo "BLOCKED $t is not installed"; exit 1; }; done
 gh auth status >/dev/null 2>&1 || { echo "BLOCKED gh is not signed in: run gh auth login"; exit 1; }
 
@@ -19,11 +21,12 @@ if [ -d "$KIT/.git" ]; then git -C "$KIT" pull -q --ff-only; else git clone -q h
 mkdir -p "$RUNS"
 curl -fsSL "$RAW/examples/real-run/TASK-1.md" -o "$RUNS/TASK-1.md"
 
+# A fresh working copy each run, separate from your own tubedesk folder.
+rm -rf "$REPO"
+git clone -q "$TUBEDESK_URL" "$REPO"
 cd "$REPO"
-[ -z "$(git status --porcelain)" ] || { echo "BLOCKED tubedesk has uncommitted changes; commit or stash them first"; exit 1; }
 git checkout -q main
-git pull -q --ff-only origin main
-[ -d node_modules ] || npm ci --silent
+npm ci --silent
 
 # One-time worker setup (committed to main so every bot branch inherits it).
 if [ ! -f .claude/settings.json ] || ! grep -q "Worker contract" CLAUDE.md 2>/dev/null; then
