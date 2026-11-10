@@ -24,6 +24,12 @@
     "deny": [
       "Read(**/.env*)",
       "Edit(**/.env*)",
+      "Edit(~/.config/gh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(~/.ssh/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.ssh/**)",
       "WebFetch",
       "WebSearch",
       "Bash(git push:*)",
